@@ -4,11 +4,13 @@ import { Effect, Layer } from "effect"
 import { createServer } from "node:http"
 import { ApiLive } from "./Api.js"
 import { Config } from "./Config.js"
+import { Database } from "./Database.js"
 import { TodosRepository } from "./TodosRepository.js"
 
 const HttpLive = HttpApiBuilder.serve(HttpMiddleware.logger).pipe(
   Layer.provide(ApiLive),
   Layer.provide(TodosRepository.Default),
+  Layer.provide(Database.Default),
   Layer.provide(Config.Default),
   Layer.provide(NodeHttpServer.layer(createServer, { port: 3000 }))
 )

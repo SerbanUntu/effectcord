@@ -1,44 +1,58 @@
 import { Todo, TodoId, TodoNotFound } from "@template/domain/TodosApi"
-import { drizzle } from "drizzle-orm/node-postgres"
-import { Effect, HashMap, Ref } from "effect"
-import { Config } from "./Config.js"
+
+import { eq } from "drizzle-orm"
+import { Effect } from "effect"
+import { Database, DatabaseError } from "./Database.js"
+import { todos } from "./schema.js"
 
 export class TodosRepository extends Effect.Service<TodosRepository>()("api/TodosRepository", {
   effect: Effect.gen(function*() {
-    const todos = yield* Ref.make(HashMap.empty<TodoId, Todo>())
-    const { env } = yield* Config
-    const _db = drizzle(env.DATABASE_URL)
+    const { runQuery } = yield* Database
 
-    const getAll = Ref.get(todos).pipe(
-      Effect.map((todos) => Array.from(HashMap.values(todos)))
-    )
+    const getAll = () =>
+      runQuery((db) => db.query.todos.findMany()).pipe(
+        Effect.map((rows) =>
+          rows.map((row) =>
+            new Todo({
+              ...row,
+              id: TodoId.make(row.id)
+            })
+          )
+        )
+      )
 
-    function getById(id: TodoId): Effect.Effect<Todo, TodoNotFound> {
-      return Ref.get(todos).pipe(
-        Effect.flatMap(HashMap.get(id)),
-        Effect.catchTag("NoSuchElementException", () => new TodoNotFound({ id }))
+    const getById = (id: TodoId) => {
+      return runQuery((db) => db.query.todos.findFirst({ where: eq(todos.id, id) })).pipe(
+        Effect.flatMap((row) =>
+          row === undefined ?
+            Effect.fail(new TodoNotFound({ id }))
+            : Effect.succeed(new Todo({ ...row, id: TodoId.make(row.id) }))
+        )
       )
     }
 
-    function create(text: string): Effect.Effect<Todo> {
-      return Ref.modify(todos, (map) => {
-        const id = TodoId.make(HashMap.reduce(map, -1, (max, todo) => todo.id > max ? todo.id : max) + 1)
-        const todo = new Todo({ id, text, done: false })
-        return [todo, HashMap.set(map, id, todo)]
-      })
-    }
-
-    function complete(id: TodoId): Effect.Effect<Todo, TodoNotFound> {
-      return getById(id).pipe(
-        Effect.map((todo) => new Todo({ ...todo, done: true })),
-        Effect.tap((todo) => Ref.update(todos, HashMap.set(todo.id, todo)))
+    const create = (text: string) => {
+      return runQuery((db) => db.insert(todos).values({ text }).returning()).pipe(
+        Effect.flatMap((rows) =>
+          rows.length !== 1 ?
+            Effect.fail(new DatabaseError({ message: "Todo was created but could not be returned " }))
+            : Effect.succeed(new Todo({ ...rows[0], id: TodoId.make(rows[0].id) }))
+        )
       )
     }
 
-    function remove(id: TodoId): Effect.Effect<void, TodoNotFound> {
-      return getById(id).pipe(
-        Effect.flatMap((todo) => Ref.update(todos, HashMap.remove(todo.id)))
+    const complete = (id: TodoId) => {
+      return runQuery((db) => db.update(todos).set({ done: true }).returning()).pipe(
+        Effect.flatMap((rows) =>
+          rows.length !== 1 ?
+            Effect.fail(new TodoNotFound({ id }))
+            : Effect.succeed(new Todo({ ...rows[0], id: TodoId.make(rows[0].id) }))
+        )
       )
+    }
+
+    const remove: (id: TodoId) => Effect.Effect<void, DatabaseError, never> = (id) => {
+      return runQuery((db) => db.delete(todos).where(eq(todos.id, id)))
     }
 
     return {
