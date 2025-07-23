@@ -1,9 +1,13 @@
 import { Todo, TodoId, TodoNotFound } from "@template/domain/TodosApi"
+import { drizzle } from "drizzle-orm/node-postgres"
 import { Effect, HashMap, Ref } from "effect"
+import { Config } from "./Config.js"
 
 export class TodosRepository extends Effect.Service<TodosRepository>()("api/TodosRepository", {
   effect: Effect.gen(function*() {
     const todos = yield* Ref.make(HashMap.empty<TodoId, Todo>())
+    const { env } = yield* Config
+    const _db = drizzle(env.DATABASE_URL)
 
     const getAll = Ref.get(todos).pipe(
       Effect.map((todos) => Array.from(HashMap.values(todos)))

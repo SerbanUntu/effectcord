@@ -23,7 +23,10 @@
     "@effect/platform": "latest",
     "@effect/platform-node": "latest",
     "@template/domain": "workspace:^",
-    "effect": "latest"
+    "dotenv": "^17.2.0",
+    "drizzle-orm": "^0.41.0",
+    "effect": "latest",
+    "pg": "^8.16.3"
   },
   "effect": {
     "generateExports": {
@@ -36,5 +39,10 @@
         "**/*.ts"
       ]
     }
+  },
+  "devDependencies": {
+    "@types/pg": "^8.15.4",
+    "drizzle-kit": "^0.30.5",
+    "tsx": "^4.20.3"
   }
 }

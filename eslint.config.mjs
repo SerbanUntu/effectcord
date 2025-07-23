@@ -112,7 +112,8 @@ export default [
           quoteStyle: "alwaysDouble",
           trailingCommas: "never",
           operatorPosition: "maintain",
-          "arrowFunction.useParentheses": "force"
+          "arrowFunction.useParentheses": "force",
+          newLineKind: "crlf"
         }
       }]
     }
