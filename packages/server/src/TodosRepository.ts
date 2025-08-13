@@ -2,14 +2,15 @@ import { Todo, TodoId, TodoNotFound } from "@template/domain/TodosApi"
 
 import { eq } from "drizzle-orm"
 import { Effect } from "effect"
-import { Database, DatabaseError } from "./Database.js"
+import { DatabaseError } from "../../domain/src/TodosApi.js"
+import { Database } from "./Database.js"
 import { todos } from "./schema.js"
 
 export class TodosRepository extends Effect.Service<TodosRepository>()("api/TodosRepository", {
   effect: Effect.gen(function*() {
     const { runQuery } = yield* Database
 
-    const getAll = () =>
+    const getAll = (): Effect.Effect<Array<Todo>, DatabaseError, never> =>
       runQuery((db) => db.query.todos.findMany()).pipe(
         Effect.map((rows) =>
           rows.map((row) =>

@@ -1,11 +1,8 @@
 import { drizzle } from "drizzle-orm/node-postgres"
-import { Effect, Schema } from "effect"
+import { Effect } from "effect"
+import { DatabaseError } from "../../domain/src/TodosApi.js"
 import { Config } from "./Config.js"
 import * as schema from "./schema.js"
-
-export class DatabaseError extends Schema.TaggedError<DatabaseError>()("DatabaseError", {
-  message: Schema.String
-}) {}
 
 export class Database extends Effect.Service<Database>()("api/Database", {
   effect: Effect.gen(function*() {

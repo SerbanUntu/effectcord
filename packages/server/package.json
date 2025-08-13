@@ -24,8 +24,8 @@
 		"db:studio": "drizzle-kit studio"
 	},
 	"dependencies": {
-		"@effect/platform": "latest",
-		"@effect/platform-node": "latest",
+		"@effect/platform": "0.90.0",
+		"@effect/platform-node": "0.90.0",
 		"@template/domain": "workspace:^",
 		"dotenv": "^17.2.0",
 		"drizzle-orm": "^0.41.0",
