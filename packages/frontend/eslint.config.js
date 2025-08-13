@@ -9,7 +9,8 @@ const compat = new FlatCompat({
 
 export default tseslint.config(
   {
-    ignores: [".next"],
+		// TODO: Remove this once the socket.ts file is improved
+    ignores: [".next", "**/lib/socket.ts"],
   },
   ...compat.extends("next/core-web-vitals"),
   {

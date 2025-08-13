@@ -6,7 +6,7 @@ import { type Socket } from "socket.io-client"
 class SocketService {
   private socket: Socket | null = null
 
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private listeners = new Map<string, Array<(...args: Array<any>) => void>>()
 
   // Initialize socket connection
@@ -64,7 +64,7 @@ class SocketService {
     if (eventListeners) {
       eventListeners.forEach((callback) => {
         try {
-					// eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-explicit-any
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-explicit-any
           ;(callback as any)(...args)
         } catch (error) {
           console.error(`Error in socket listener for ${event}:`, error)
